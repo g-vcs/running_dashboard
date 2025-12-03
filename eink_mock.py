@@ -1,4 +1,8 @@
+from datetime import timedelta
+
 from PIL import Image, ImageDraw
+
+from running_dashboard import get_week_data
 
 WIDTH = 250
 HEIGHT = 122
@@ -8,24 +12,31 @@ DAYS = ["DOM", "SEG", "TER", "QUA", "QUI", "SEX", "SAB"]
 
 
 def create_image():
+    summary, daily_stats, week_start, week_end = get_week_data()
+
     image = Image.new("1", (WIDTH, HEIGHT), 1)
     draw = ImageDraw.Draw(image)
 
-    draw_header(draw)
-    draw_mascot(draw)
-    draw_week_bar(draw, "")
+    draw_header(draw, summary, week_start, week_end)
+    draw_mascot(draw, summary)
+    draw_week_bar(draw, daily_stats)
 
     image.save("dashboard.png")
     print("Imagem criada: dashboard.png")
 
 
-def draw_header(draw):
-    draw.text((4, 2), "24.11 -> 30.11")
-    draw.text((4, 12), "25.3 km | 3 corridas")
+def draw_header(draw, summary, week_start, week_end):
+    total_km, _, runs_count, _, _ = summary
+    last_day = week_end - timedelta(days=1)
+    line1 = f"{week_start.day:02d}.{week_start.month:02d} -> {last_day.day:02d}.{last_day.month:02d}"
+    line2 = f"{total_km:.1f} km | {runs_count} corridas"
+
+    draw.text((4, 2), line1)
+    draw.text((4, 12), line2)
     draw.line((0, HEADER_BOTTOM, WIDTH - 1, HEADER_BOTTOM), fill=0)
 
 
-def draw_mascot(draw):
+def draw_mascot(draw, summary):
     center_y = int(HEADER_BOTTOM + (MASCOT_BOTTOM - HEADER_BOTTOM) / 2)
     face = "(o_o)"
     len_face = draw.textlength(face)

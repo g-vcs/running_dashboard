@@ -1,22 +1,18 @@
-from dotenv import load_dotenv
-import os
-import requests
 from datetime import datetime, timedelta, timezone
+
+import requests
+
+from strava_tokens import get_valid_access_token
 
 DAYS_PT = ["DOM", "SEG", "TER", "QUA", "QUI", "SEX", "SAB"]
 
 
 def fetch_activities():
-    load_dotenv()
-    ACCESS_TOKEN = os.getenv("STRAVA_ACCESS_TOKEN")
-
-    if not ACCESS_TOKEN:
-        raise RuntimeError("STRAVA_ACCESS_TOKEN not defined on env")
-
+    token = get_valid_access_token()
     url = "https://www.strava.com/api/v3/athlete/activities"
-    headers = {"Authorization": "Bearer " + ACCESS_TOKEN}
+    headers = {"Authorization": "Bearer " + token}
     response = requests.get(url, headers=headers)
-
+    response.raise_for_status()
     return response.json()
 
 
@@ -107,6 +103,7 @@ def group_runs_by_day(weekly_runs, week_start):
 
     return daily_stats
 
+
 def render_daily_overview(daily_stats):
     day_cells = []
     dist_cells = []
@@ -127,15 +124,18 @@ def render_daily_overview(daily_stats):
     print("".join(cell.ljust(col_width) for cell in dist_cells))
     print("".join(cell.ljust(col_width) for cell in check_cells))
 
-
-
-if __name__ == "__main__":
+def get_week_data():
     activities = fetch_activities()
     week_start, week_end = get_current_week_range()
     weekly_runs = filter_week_runs(activities, week_start, week_end)
     summary = summarize_week(weekly_runs)
-   #render_weekly_summary(summary, week_start, week_end)
-
     daily_stats = group_runs_by_day(weekly_runs, week_start)
-    render_daily_overview(daily_stats)
+    return summary, daily_stats, week_start, week_end
 
+
+if __name__ == "__main__":
+    data = get_week_data()
+
+
+    render_weekly_summary(data[0], data[2], data[3])
+    render_daily_overview(data[1])
