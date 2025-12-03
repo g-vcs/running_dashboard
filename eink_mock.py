@@ -6,7 +6,7 @@ from running_dashboard import get_week_data
 
 WIDTH = 250
 HEIGHT = 122
-HEADER_BOTTOM = 24
+HEADER_BOTTOM = 36
 MASCOT_BOTTOM = 65
 DAYS = ["DOM", "SEG", "TER", "QUA", "QUI", "SEX", "SAB"]
 
@@ -26,19 +26,28 @@ def create_image():
 
 
 def draw_header(draw, summary, week_start, week_end):
-    total_km, _, runs_count, _, _ = summary
+    total_km, _, runs_count, pace, _ = summary
     last_day = week_end - timedelta(days=1)
     line1 = f"{week_start.day:02d}.{week_start.month:02d} -> {last_day.day:02d}.{last_day.month:02d}"
     line2 = f"{total_km:.1f} km | {runs_count} corridas"
+    line3 = f"{round(pace,2)} min/km"
 
     draw.text((4, 2), line1)
     draw.text((4, 12), line2)
+    draw.text((4, 24), line3)
     draw.line((0, HEADER_BOTTOM, WIDTH - 1, HEADER_BOTTOM), fill=0)
 
 
 def draw_mascot(draw, summary):
-    center_y = int(HEADER_BOTTOM + (MASCOT_BOTTOM - HEADER_BOTTOM) / 2)
-    face = "(o_o)"
+    total_km, _, runs_count, _, _ = summary
+    if runs_count == 0:
+        face = "(x_x)"
+    elif total_km < 10:
+        face = "(-_-)"
+    else:
+        face = "(^_^)"
+
+    center_y = int(HEADER_BOTTOM + (MASCOT_BOTTOM - HEADER_BOTTOM) / 2) - 5
     len_face = draw.textlength(face)
     draw.text(((WIDTH - len_face) / 2, center_y), face)
 
@@ -46,7 +55,6 @@ def draw_mascot(draw, summary):
 
 
 def draw_week_bar(draw, daily_stats):
-    mock_km = [12, 0, 0, 5, 0, 7, 0]
     col_width = (WIDTH - 8) / 7.0
 
     for i in range(7):
@@ -56,8 +64,9 @@ def draw_week_bar(draw, daily_stats):
         day_name_width = draw.textlength(day_name)
         text_day_name = center_x - day_name_width / 2
 
-        km_value = mock_km[i]
-        km = str(mock_km[i])
+        distance = round(daily_stats[i]["distance_km"], 1)
+        km_value = distance
+        km = str(distance)
         km_width = draw.textlength(km)
         text_km = center_x - km_width / 2
 
