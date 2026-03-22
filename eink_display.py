@@ -4,7 +4,7 @@ sys.path.append('/home/guilherme-x1/e-Paper/RaspberryPi_JetsonNano/python/lib')
 from datetime import timedelta
 from PIL import Image, ImageDraw
 from waveshare_epd import epd2in13_V3
-from running_dashboard import get_week_data
+from running_dashboard import get_week_data, format_pace
 
 WIDTH = 250
 HEIGHT = 122
@@ -23,7 +23,7 @@ def create_image():
 def draw_header(draw, summary):
     total_km, _, runs_count, pace, _ = summary
     km_text = f"{total_km:.1f} km"
-    pace_text = f"{pace:.2f} min/km"
+    pace_text = format_pace(pace)
     runs_text = f"{runs_count} corridas"
     draw.text((4, 2), km_text, fill=0)
     draw.text((4, 16), pace_text, fill=0)
