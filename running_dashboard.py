@@ -47,7 +47,7 @@ def summarize_week(weekly_runs):
     longest_run_km = 0
     for act in weekly_runs:
         total_distance += act["distance"] / 1000
-        total_time += act["elapsed_time"]
+        total_time += act["moving_time"]
         if act["distance"] > longest_run_km:
             longest_run_km = act["distance"]
 
@@ -85,6 +85,10 @@ def format_duration(seconds):
     else:
         return str(secs) + "s"
 
+def format_pace(pace_decimal):
+    minutes = int(pace_decimal)
+    seconds = int((pace_decimal - minutes) * 60)
+    return f"{minutes}:{seconds:02d} min/km"
 
 def group_runs_by_day(weekly_runs, week_start):
     daily_stats = [
